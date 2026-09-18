@@ -1,0 +1,55 @@
+# Multi-platform CI — pin third-party actions to full SHAs when possible.
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      # actions/checkout@v4.2.2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # dtolnay/rust-toolchain@stable (pin via dtolnay/rust-toolchain@stable tag historically;
+      # prefer commit when available in your fork)
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all -- --check
+      - run: cargo check --all-targets --locked
+      - run: cargo test --all-targets --locked
+      - run: cargo clippy --all-targets --locked -- -D clippy::correctness -D clippy::suspicious -A clippy::all
+      - run: cargo build --release --locked
+      - name: examples smoke (unix)
+        if: runner.os != 'Windows'
+        run: |
+          ./target/release/ai-lang -e 'print 1+2;'
+          ./target/release/ai-lang examples/calculator.al
+          ./target/release/ai-lang examples/list_demo.al
+          ./target/release/ai-lang examples/hello_language.al
+
+  audit:
+    name: audit-sbom
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+      - name: cargo audit (fail on advisories)
+        run: cargo audit
+      - name: SBOM
+        run: python3 scripts/gen_sbom.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
