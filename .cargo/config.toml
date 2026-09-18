@@ -1,0 +1,14 @@
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "vendor"
+
+# Intermediate: silence volume of missing_docs/unused until filled.
+[build]
+rustflags = [
+  "-A", "missing_docs",
+  "-A", "unused",
+  "-A", "unreachable_patterns",
+  "-A", "dead_code",
+]
