@@ -1,0 +1,29 @@
+[package]
+name = "ai-lang"
+version = "1.6.8"
+edition = "2021"
+description = "AI-Lang: AI-first language (intermediate 1.6.x) — compiler, VM, tensors, autodiff, portable backends"
+license = "EPL-2.0"
+readme = "README.md"
+keywords = ["ai", "compiler", "vm", "bytecode", "programming-language"]
+categories = ["development-tools::interpreters"]
+
+[lib]
+name = "ai_lang"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+blas = ["dep:matrixmultiply"]
+cuda = []
+python = []
+
+[dependencies]
+num-traits = "0.2"
+smallvec = "1"
+matrixmultiply = { version = "0.3", optional = true }
+
+[profile.release]
+lto = false
+codegen-units = 1
+strip = "symbols"
