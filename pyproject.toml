@@ -1,0 +1,19 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "ai-lang"
+version = "1.6.1"
+description = "AI-Lang: AI-first programming language (compiler + VM) with Python bindings"
+requires-python = ">=3.9"
+license = { text = "EPL-2.0" }
+keywords = ["ai", "compiler", "vm", "autodiff"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.maturin]
+features = ["python"]
+module-name = "ai_lang"
+python-source = "python"
